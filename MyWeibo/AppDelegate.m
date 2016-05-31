@@ -37,6 +37,18 @@
         self.window.rootViewController = [[OAuthViewController alloc] init];
     }
     
+    /**
+     *  iOS8以上程序必须注册通知不然不能在程序的图标右上角显示消息数
+     */
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+        UIUserNotificationType myType = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
+        UIUserNotificationSettings *mySetting = [UIUserNotificationSettings settingsForTypes:myType categories:nil];
+        [[UIApplication sharedApplication] registerUserNotificationSettings:mySetting];
+    }else{
+        UIRemoteNotificationType myType = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:myType];
+    }
+    
     return YES;
 }
 

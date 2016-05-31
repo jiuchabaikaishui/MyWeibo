@@ -97,6 +97,7 @@
     CGRect endRect = [infoDic[@"UIKeyboardFrameEndUserInfoKey"] CGRectValue];
     NSTimeInterval time = [infoDic[@"UIKeyboardAnimationDurationUserInfoKey"] doubleValue];
     UIViewAnimationCurve curve = [infoDic[@"UIKeyboardAnimationCurveUserInfoKey"] intValue];
+    
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:time];
     [UIView setAnimationCurve:curve];
