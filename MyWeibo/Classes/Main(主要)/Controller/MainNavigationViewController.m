@@ -8,7 +8,7 @@
 
 #import "MainNavigationViewController.h"
 
-#define ios7  [[UIDevice currentDevice].systemVersion floatValue] > 7.0
+#define ios7  ([[UIDevice currentDevice].systemVersion floatValue] > 7.0)
 
 @interface MainNavigationViewController ()<UINavigationControllerDelegate,UIGestureRecognizerDelegate>
 @property (strong, nonatomic)UIViewController *currentShowVC;
