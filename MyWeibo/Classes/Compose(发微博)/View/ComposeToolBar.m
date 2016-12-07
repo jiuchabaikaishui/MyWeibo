@@ -55,11 +55,11 @@
     self.imageView = imageView;
     
     NSArray *arr = @[
-                     @{@"image":@"compose_camerabutton_background_os7",@"himge":@"compose_camerabutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeCamera)},
-                     @{@"image":@"compose_toolbar_picture_os7",@"himge":@"compose_toolbar_picture_highlighted_os7",@"type":@(ComposeToolBarButtonTypePicture)},
-                     @{@"image":@"compose_mentionbutton_background_os7",@"himge":@"compose_mentionbutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeMention)},
-                     @{@"image":@"compose_trendbutton_background_os7",@"himge":@"compose_trendbutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeTrend)},
-                     @{@"image":@"compose_emoticonbutton_background_os7",@"himge":@"compose_emoticonbutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeEmotion)}
+                     @{@"image":@"compose_camerabutton_background_os7",@"himage":@"compose_camerabutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeCamera)},
+                     @{@"image":@"compose_toolbar_picture_os7",@"himage":@"compose_toolbar_picture_highlighted_os7",@"type":@(ComposeToolBarButtonTypePicture)},
+                     @{@"image":@"compose_mentionbutton_background_os7",@"himage":@"compose_mentionbutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeMention)},
+                     @{@"image":@"compose_trendbutton_background_os7",@"himage":@"compose_trendbutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeTrend)},
+                     @{@"image":@"compose_emoticonbutton_background_os7",@"himage":@"compose_emoticonbutton_background_highlighted_os7",@"type":@(ComposeToolBarButtonTypeEmotion)}
                      ];
     for (NSDictionary *dic in arr) {
         [self.buttons addObject:[self addButtonWithImage:dic[@"image"] hightImage:dic[@"himage"] andType:(ComposeToolBarButtonType)dic[@"type"]]];

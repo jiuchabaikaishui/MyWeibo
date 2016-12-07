@@ -12,7 +12,8 @@
 /**
  *  公用宏部分
  */
-#define IOS7                                [[UIDevice currentDevice].systemVersion doubleValue] > 0
+#define IOS7                                ([[UIDevice currentDevice].systemVersion doubleValue] >= 7.0)
+#define IOS8                                ([[UIDevice currentDevice].systemVersion doubleValue] >= 8.0)
 #define QSPClolor(r,g,b)                    [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:1]
 #define MainControllerView_Color            QSPClolor(226, 226, 226)
 #define DefaultImage                        [UIImage imageNamed:@"defaultPic"]
@@ -25,6 +26,11 @@
 #define MainStatusBar_Height                [[UIApplication sharedApplication] statusBarFrame].size.height
 #define MainNavBar_Height                   ([self isKindOfClass:[UIViewController class]] ? self.navigationController.navigationBar.frame.size.height : 44)
 #define MainStatus_NavBar_Height            (MainStatusBar_Height + MainNavBar_Height)
+
+/**
+ *  宏方法
+ */
+#define MainAlertMsg(msg)                   {NSString *title = @"提示";NSString *buttonTitle = @"确定";if (IOS8) {UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:msg preferredStyle:UIAlertControllerStyleAlert];UIAlertAction *action = [UIAlertAction actionWithTitle:title style:UIAlertActionStyleCancel handler:nil];[alertController addAction:action];[[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alertController animated:YES completion:nil];}else{UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:msg delegate:nil cancelButtonTitle:buttonTitle otherButtonTitles:nil, nil];[alertView show];}}
 
 /**
  *  常用对象

@@ -7,6 +7,8 @@
 //
 
 #import "QSP_ImageSelectView.h"
+#import <AVFoundation/AVFoundation.h>
+#import <AssetsLibrary/AssetsLibrary.h>
 
 /**
  *  1.调试阶段，写代码调试错误，需要打印。(系统会自定义一个叫做DEBUG的宏)
@@ -18,12 +20,14 @@
 #define QSPLog(...)
 #endif
 
+#define ios7  ([[UIDevice currentDevice].systemVersion floatValue] >= 7.0)
+#define ios8  ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0)
 #define Default_Spacing      8
 #define Default_ColumnsNum   3
 #define Default_RowHeight    (-1)
 #define Default_MaxImagesCount     NSIntegerMax
 
-@interface QSP_ImageSelectView ()<UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+@interface QSP_ImageSelectView ()<UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIActionSheetDelegate>
 
 @property (strong, nonatomic)NSMutableArray *imageButtons;
 @property (weak, nonatomic)UIViewController *currentViewController;
@@ -41,33 +45,6 @@
 //获取当前屏幕显示的viewcontroller
 - (UIViewController *)currentViewController
 {
-    //网络上获取当前window的方法
-//    UIWindow * window = [[UIApplication sharedApplication] keyWindow];
-//    if (window.windowLevel != UIWindowLevelNormal)
-//    {
-//        NSArray *windows = [[UIApplication sharedApplication] windows];
-//        for(UIWindow * tmpWin in windows)
-//        {
-//            if (tmpWin.windowLevel == UIWindowLevelNormal)
-//            {
-//                window = tmpWin;
-//                break;
-//            }
-//        }
-//    }
-    //自己获取当前window的方法
-//    UIWindow *currentWindow = [UIApplication sharedApplication].delegate.window;
-//    if (currentWindow) {
-//        id responder = [currentWindow nextResponder];
-//        if ([responder isKindOfClass:[UIViewController class]]) {
-//            return responder;
-//        }
-//        
-//        return currentWindow.rootViewController;
-//    }
-//    
-    //    return nil;
-    
     for (UIView* next = [self superview]; next; next = next.superview) {
         UIResponder* nextResponder = [next nextResponder];
         if ([nextResponder isKindOfClass:[UIViewController class]]) {
@@ -143,6 +120,10 @@
 }
 
 #pragma mark - 系统方法
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
@@ -179,28 +160,33 @@
         QSPLog(@"%s",__FUNCTION__);
         
         __weak typeof(self) weakSelf = self;
-        UIAlertController *alertCtr = [UIAlertController alertControllerWithTitle:@"选择图片来源" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-        UIAlertAction *photoAction = [UIAlertAction actionWithTitle:@"相册" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            QSPLog(@"您点击了相册！");
-            
-            UIImagePickerController *pickCtr = [[UIImagePickerController alloc] init];
-            pickCtr.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-            pickCtr.delegate = weakSelf;
-            [[weakSelf currentViewController] presentViewController:pickCtr animated:YES completion:nil];
-        }];
-        UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"相机" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            QSPLog(@"您选择了相机！");
-            
-            UIImagePickerController *pickCtr = [[UIImagePickerController alloc] init];
-            pickCtr.sourceType = UIImagePickerControllerSourceTypeCamera;
-            pickCtr.delegate = weakSelf;
-            [[weakSelf currentViewController] presentViewController:pickCtr animated:YES completion:nil];
-        }];
-        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
-        [alertCtr addAction:photoAction];
-        [alertCtr addAction:cameraAction];
-        [alertCtr addAction:cancelAction];
-        [self.currentViewController presentViewController:alertCtr animated:YES completion:nil];
+        NSString *title = @"选择图片来源";
+        NSString *photoButtonTitle = @"相册";
+        NSString *cameraButtonTitle = @"相机";
+        NSString *cancelButtonTitle = @"取消";
+        if (ios8) {
+            UIAlertController *alertCtr = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+            UIAlertAction *photoAction = [UIAlertAction actionWithTitle:photoButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                QSPLog(@"您点击了相册！");
+                
+                [weakSelf choosePhoto];
+            }];
+            UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:cameraButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                QSPLog(@"您选择了相机！");
+                
+                [weakSelf chooseCamera];
+            }];
+            UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:nil];
+            [alertCtr addAction:photoAction];
+            [alertCtr addAction:cameraAction];
+            [alertCtr addAction:cancelAction];
+            [self.currentViewController presentViewController:alertCtr animated:YES completion:nil];
+        }
+        else
+        {
+            UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:title delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:nil otherButtonTitles:photoButtonTitle, cameraButtonTitle, nil];
+            [actionSheet showInView:[UIApplication sharedApplication].delegate.window];
+        }
     }
     else
     {
@@ -220,33 +206,35 @@
         QSPLog(@"您点击了第%i张图片！",(int)index);
         
         __weak typeof(self) weakSelf = self;
-        UIAlertController *alertCtr = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-        UIAlertAction *photoAction = [UIAlertAction actionWithTitle:@"相册" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            UIImagePickerController *pickerCtr = [[UIImagePickerController alloc] init];
-            pickerCtr.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-            pickerCtr.delegate = weakSelf;
-            [weakSelf.currentViewController presentViewController:pickerCtr animated:YES completion:nil];
-        }];
-        [alertCtr addAction:photoAction];
-        UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"相机" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            UIImagePickerController *pickerCtr = [[UIImagePickerController alloc] init];
-            pickerCtr.sourceType = UIImagePickerControllerSourceTypeCamera;
-            pickerCtr.delegate = weakSelf;
-            [weakSelf.currentViewController presentViewController:pickerCtr animated:YES completion:nil];
-        }];
-        [alertCtr addAction:cameraAction];
-        __weak typeof(UIButton) *weakSender = sender;
-        UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"删除" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-            [weakSelf deleteImageButton:weakSender];
-            
-            if ([self.qspDelegate respondsToSelector:@selector(imageSelectViewAfterChangePicture:)]) {
-                [self.qspDelegate imageSelectViewAfterChangePicture:self];
-            }
-        }];
-        [alertCtr addAction:deleteAction];
-        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
-        [alertCtr addAction:cancelAction];
-        [self.currentViewController presentViewController:alertCtr animated:YES completion:nil];
+        NSString *photoButtonTitle = @"相册";
+        NSString *cameraButtonTitle = @"相机";
+        NSString *deleteButtonTitle = @"删除";
+        NSString *cancelButtonTitle = @"取消";
+        if (ios8) {
+            UIAlertController *alertCtr = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+            UIAlertAction *photoAction = [UIAlertAction actionWithTitle:photoButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [weakSelf choosePhoto];
+            }];
+            [alertCtr addAction:photoAction];
+            UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:cameraButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [weakSelf choosePhoto];
+            }];
+            [alertCtr addAction:cameraAction];
+            __weak typeof(UIButton) *weakSender = sender;
+            UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:deleteButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [weakSelf chooseDelete:weakSender];
+            }];
+            [alertCtr addAction:deleteAction];
+            UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:nil];
+            [alertCtr addAction:cancelAction];
+            [self.currentViewController presentViewController:alertCtr animated:YES completion:nil];
+        }
+        else
+        {
+            UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:nil otherButtonTitles:photoButtonTitle, cameraButtonTitle, deleteButtonTitle, nil];
+            actionSheet.tag = 11111;
+            [actionSheet showInView:[UIApplication sharedApplication].delegate.window];
+        }
     }
     else
     {
@@ -371,6 +359,90 @@
     [self.imageButtons removeObject:button];
     [button removeFromSuperview];
 }
+/**
+ *  选择相册
+ */
+- (void)choosePhoto
+{
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    if (authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied)
+    {
+        [self showAlertMsg:@"请授权掌医医护端使用相机服务: 设置 > 隐私 > 照片"];
+        return;
+    }
+    
+    UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+    //资源类型为图片库
+    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    picker.delegate = self;
+    //设置选择后的图片可被编辑
+    picker.allowsEditing = NO;
+    
+    [[self currentViewController] presentViewController:picker animated:YES completion:nil];
+    
+    UIImagePickerController *pickCtr = [[UIImagePickerController alloc] init];
+    pickCtr.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    pickCtr.delegate = self;
+    [[self currentViewController] presentViewController:pickCtr animated:YES completion:nil];
+}
+/**
+ *  选择相机
+ */
+- (void)chooseCamera
+{
+    ALAuthorizationStatus authStatus = [ALAssetsLibrary authorizationStatus];
+    if (authStatus == ALAuthorizationStatusRestricted || authStatus == ALAuthorizationStatusDenied)
+    {
+        [self showAlertMsg:@"请授权掌医医护端使用相机服务: 设置 > 隐私 > 相机"];
+        return;
+    }
+    
+    //判断是否有相机
+    if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera])
+    {
+        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+        picker.delegate = self;
+        //设置拍照后的图片可被编辑
+        picker.allowsEditing = NO;
+        //资源类型为照相机
+        UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
+        //资源类型为照相机
+        picker.sourceType = sourceType;
+        
+        [[self currentViewController] presentViewController:picker animated:YES completion:nil];
+    }
+    else
+    {
+        [self showAlertMsg:@"该设备无摄像头"];
+    }
+}
+/**
+ *  选择删除
+ */
+- (void)chooseDelete:(UIButton *)sender
+{
+    [self deleteImageButton:sender];
+    
+    if ([self.qspDelegate respondsToSelector:@selector(imageSelectViewAfterChangePicture:)]) {
+        [self.qspDelegate imageSelectViewAfterChangePicture:self];
+    }
+}
+- (void)showAlertMsg:(NSString *)message
+{
+    NSString *title = @"提示";
+    NSString *buttonTitle = @"确定";
+    if (ios8) {
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:title style:UIAlertActionStyleCancel handler:nil];
+        [alertController addAction:action];
+        [[self currentViewController] presentViewController:alertController animated:YES completion:nil];
+    }
+    else
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:buttonTitle otherButtonTitles:nil, nil];
+        [alertView show];
+    }
+}
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
 {
@@ -390,6 +462,30 @@
         if ([self.qspDelegate respondsToSelector:@selector(imageSelectViewAfterChangePicture:)]) {
             [self.qspDelegate imageSelectViewAfterChangePicture:self];
         }
+    }
+}
+
+#pragma mark - <UIActionSheetDelegate>代理方法
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    QSPLog(@"%i", (int)buttonIndex);
+    switch (buttonIndex) {
+        case 0:
+            [self choosePhoto];
+            break;
+        case 1:
+            [self chooseCamera];
+            break;
+        case 2:
+        {
+            if (actionSheet.tag == 11111) {
+                [self chooseDelete:self.currentButton];
+            }
+        }
+            break;
+            
+        default:
+            break;
     }
 }
 

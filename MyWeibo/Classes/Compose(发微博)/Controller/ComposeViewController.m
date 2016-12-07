@@ -13,6 +13,8 @@
 #import "ComposeToolBar.h"
 #import "QSP_ImageSelectView.h"
 #import "ConFunc.h"
+#import <AVFoundation/AVFoundation.h>
+#import <AssetsLibrary/AssetsLibrary.h>
 
 @interface ComposeViewController ()<UITextViewDelegate,ComposeToolBarDelegate,QSP_ImageSelectViewDelegate,UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
@@ -179,18 +181,50 @@
     switch (type) {
         case ComposeToolBarButtonTypeCamera:
         {
-            UIImagePickerController *pickCtr = [[UIImagePickerController alloc] init];
-            pickCtr.sourceType = UIImagePickerControllerSourceTypeCamera;
-            pickCtr.delegate = weakSelf;
-            [weakSelf presentViewController:pickCtr animated:YES completion:nil];
+            ALAuthorizationStatus authStatus = [ALAssetsLibrary authorizationStatus];
+            if (authStatus == ALAuthorizationStatusRestricted || authStatus == ALAuthorizationStatusDenied)
+            {
+                MainAlertMsg(@"请授权掌医医护端使用相机服务: 设置 > 隐私 > 相机");
+                return;
+            }
+            
+            //判断是否有相机
+            if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera])
+            {
+                UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+                picker.delegate = self;
+                //设置拍照后的图片可被编辑
+                picker.allowsEditing = NO;
+                //资源类型为照相机
+                UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
+                //资源类型为照相机
+                picker.sourceType = sourceType;
+                
+                [weakSelf presentViewController:picker animated:YES completion:nil];
+            }
+            else
+            {
+                MainAlertMsg(@"该设备无摄像头");
+            }
         }
             break;
         case ComposeToolBarButtonTypePicture:
         {
-            UIImagePickerController *pickCtr = [[UIImagePickerController alloc] init];
-            pickCtr.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-            pickCtr.delegate = weakSelf;
-            [weakSelf presentViewController:pickCtr animated:YES completion:nil];
+            AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+            if (authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied)
+            {
+                MainAlertMsg(@"请授权掌医医护端使用相机服务: 设置 > 隐私 > 照片")
+                return;
+            }
+            
+            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+            //资源类型为图片库
+            picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            picker.delegate = self;
+            //设置选择后的图片可被编辑
+            picker.allowsEditing = NO;
+            
+            [weakSelf presentViewController:picker animated:YES completion:nil];
         }
             
         default:
