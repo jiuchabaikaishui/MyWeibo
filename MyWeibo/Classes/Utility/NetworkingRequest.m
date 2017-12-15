@@ -41,9 +41,9 @@
 {
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
     manager.requestSerializer.timeoutInterval = 15;
-    if ([urlStr isEqualToString:@"https://api.weibo.com/oauth2/access_token"]) {//||[urlStr isEqualToString:@"https://rm.api.weibo.com/2/remind/unread_count.json"]
-        manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
-    }
+//    if ([urlStr isEqualToString:@"https://api.weibo.com/oauth2/access_token"]) {//||[urlStr isEqualToString:@"https://rm.api.weibo.com/2/remind/unread_count.json"]
+//        manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
+//    }
     
     if (isWait) {
         [LoadingClass show];

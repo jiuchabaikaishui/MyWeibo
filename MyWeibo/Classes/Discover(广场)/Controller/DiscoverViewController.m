@@ -46,8 +46,7 @@
     [button setTitle:@"设置" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(rightItemAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.navigationItem setRightBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:button]];
-    
-    CGRect rect = CGRectMake(SPACING, SPACING, button.frame.origin.x - SPACING*2, MainNavBar_Height - SPACING*2);
+    CGRect rect = CGRectMake(SPACING, SPACING, MainScreen_Width, MainNavBar_Height - SPACING*2);
     SearchTextField *searchTextField = [SearchTextField searchTextFieldWithFrame:rect];
     searchTextField.enablesReturnKeyAutomatically = NO;
     searchTextField.delegate = self;

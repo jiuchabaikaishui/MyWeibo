@@ -239,8 +239,6 @@
 }
 - (void)settingUi
 {
-    self.tableView.tableFooterView = [[UIView alloc] init];
-    
     self.navigationItem.leftBarButtonItem = [UIBarButtonItem getBarButtonItem:nil imageName:@"navigationbar_friendsearch_os7" highImageName:@"navigationbar_friendsearch_highlighted_os7" taget:self andAction:@selector(leftBarAction:)];
     self.navigationItem.rightBarButtonItem = [UIBarButtonItem getBarButtonItem:nil imageName:@"navigationbar_pop_os7" highImageName:@"navigationbar_pop_highlighted_os7" taget:self andAction:@selector(rightBarAction:)];
     
@@ -258,6 +256,7 @@
     
     QSPLog(@"%@",self.navigationItem.rightBarButtonItem);
     
+    self.tableView.tableFooterView = [[UIView alloc] init];
     self.tableView.backgroundColor = MainControllerView_Color;
     self.tableView.contentInset = UIEdgeInsetsMake(0, 0, SPACING, 0);
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;

@@ -56,6 +56,18 @@
     [super viewWillAppear:animated];
     
     for (UIView *view in self.tabBar.subviews) {
+        [view addObserver:self forKeyPath:@"superView" options:NSKeyValueObservingOptionOld context:nil];
+        if ([view isKindOfClass:[UIControl class]]) {
+            [view removeFromSuperview];
+        }
+    }
+}
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    for (UIView *view in self.tabBar.subviews) {
+        [view addObserver:self forKeyPath:@"superView" options:NSKeyValueObservingOptionOld context:nil];
         if ([view isKindOfClass:[UIControl class]]) {
             [view removeFromSuperview];
         }
@@ -120,6 +132,19 @@
         [self addChildViewController:nav];
         
         [self.mainTabBar addButtonWithItem:ctr.tabBarItem];
+        [ctr.tabBarItem addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:nil];
+        [ctr.tabBarItem addObserver:self forKeyPath:@"image" options:NSKeyValueObservingOptionNew context:nil];
+        [ctr.tabBarItem addObserver:self forKeyPath:@"selectImage" options:NSKeyValueObservingOptionNew context:nil];
+        [ctr.tabBarItem addObserver:self forKeyPath:@"badgeValue" options:NSKeyValueObservingOptionNew context:nil];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
+{
+    for (UIView *view in self.tabBar.subviews) {
+        if ([view isKindOfClass:[UIControl class]]) {
+            [view removeFromSuperview];
+        }
     }
 }
 

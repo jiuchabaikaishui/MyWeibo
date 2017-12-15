@@ -14,6 +14,7 @@
 // 如果服务器返回的数字很大, 建议用long long(比如主键, ID)
 @property (nonatomic, assign) long long expires_in;
 @property (nonatomic, assign) long long remind_in;
+@property (assign, nonatomic) BOOL isRealName;
 @property (nonatomic, assign) long long uid;
 /**
  *  账号过期时间
